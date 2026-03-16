@@ -1,160 +1,150 @@
-<!doctype html>
-<html lang="en">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>User Management</title>
-    <style>
-        :root { color-scheme: light; }
-        body { font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji"; margin: 0; background: #f6f7fb; color: #111827; }
-        .container { max-width: 1100px; margin: 0 auto; padding: 24px; }
-        .card { background: #fff; border: 1px solid #e5e7eb; border-radius: 12px; box-shadow: 0 1px 2px rgba(0,0,0,.04); }
-        .card-h { padding: 16px 16px 0 16px; }
-        .card-b { padding: 16px; }
-        h1 { margin: 0 0 6px 0; font-size: 20px; }
-        .muted { color: #6b7280; font-size: 13px; }
-        .grid { display: grid; grid-template-columns: 1fr; gap: 16px; }
-        @media (min-width: 900px) { .grid { grid-template-columns: 420px 1fr; align-items: start; } }
-        label { display: block; font-size: 12px; color: #374151; margin-bottom: 6px; }
-        input { width: 100%; box-sizing: border-box; padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 10px; outline: none; }
-        input:focus { border-color: #60a5fa; box-shadow: 0 0 0 3px rgba(96,165,250,.25); }
-        .row { display: grid; grid-template-columns: 1fr; gap: 12px; }
-        @media (min-width: 520px) { .row.two { grid-template-columns: 1fr 1fr; } }
-        button { border: 0; border-radius: 10px; padding: 10px 12px; cursor: pointer; font-weight: 600; }
-        .btn { background: #2563eb; color: #fff; }
-        .btn:disabled { opacity: .6; cursor: not-allowed; }
-        .btn-secondary { background: #111827; color: #fff; }
-        .btn-danger { background: #dc2626; color: #fff; }
-        .btn-ghost { background: transparent; border: 1px solid #d1d5db; color: #111827; }
-        .toolbar { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: space-between; }
-        .toolbar-left { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
-        .badge { font-size: 12px; padding: 6px 10px; border-radius: 999px; background: #eef2ff; color: #3730a3; border: 1px solid #e0e7ff; }
-        table { width: 100%; border-collapse: collapse; }
-        th, td { padding: 10px 8px; border-bottom: 1px solid #e5e7eb; font-size: 14px; vertical-align: middle; }
-        th { text-align: left; color: #374151; font-size: 12px; text-transform: uppercase; letter-spacing: .06em; }
-        .actions { display: flex; gap: 8px; justify-content: flex-end; }
-        .tiny { padding: 7px 10px; border-radius: 10px; font-size: 13px; }
-        .err { background: #fef2f2; border: 1px solid #fecaca; color: #991b1b; padding: 10px 12px; border-radius: 10px; font-size: 13px; }
-        .ok { background: #ecfdf5; border: 1px solid #a7f3d0; color: #065f46; padding: 10px 12px; border-radius: 10px; font-size: 13px; }
-        .spinner { display: inline-block; width: 14px; height: 14px; border: 2px solid rgba(255,255,255,.5); border-top-color: #fff; border-radius: 50%; animation: spin .8s linear infinite; vertical-align: -2px; margin-right: 8px; }
-        @keyframes spin { to { transform: rotate(360deg);} }
-        .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; }
-    </style>
-</head>
-<body>
-<div class="container">
-    <div class="card" style="margin-bottom: 16px;">
-        <div class="card-b">
-            <h1>User Management</h1>
-            <div class="muted">Simple UI calling your REST API at <span class="mono">/api/users</span>.</div>
-        </div>
-    </div>
-
-    <div class="grid">
-        <div class="card">
-            <div class="card-h">
-                <div style="display:flex; align-items:center; justify-content:space-between; gap: 10px;">
-                    <div>
-                        <div style="font-weight:700;">Create user</div>
-                        <div class="muted">POST <span class="mono">/api/users</span></div>
+<x-app-layout>
+    <div class="py-12">
+        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
+            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+                <div class="p-6 border-b border-gray-100">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h1 class="text-lg font-semibold text-gray-900">User Management</h1>
+                            <p class="mt-1 text-sm text-gray-500">
+                                Simple UI calling your REST API at
+                                <span class="font-mono text-xs bg-gray-100 px-2 py-0.5 rounded border border-gray-200">/api/users</span>.
+                            </p>
+                        </div>
+                        <span id="apiBaseBadge" class="inline-flex items-center rounded-full border border-indigo-100 bg-indigo-50 px-3 py-1 text-xs font-medium text-indigo-700">
+                            API: /api
+                        </span>
                     </div>
-                    <span class="badge" id="apiBaseBadge">API: /api</span>
+                </div>
+                <div class="p-6">
+                    <div id="createMsg" class="hidden mb-4 text-sm rounded-md px-4 py-3" role="alert"></div>
+                    <form id="createForm" class="space-y-4">
+                        <div class="grid grid-cols-1 gap-4 md:grid-cols-3">
+                            <div>
+                                <label for="name" class="block text-sm font-medium text-gray-700">Name</label>
+                                <input id="name" name="name" required maxlength="255" autocomplete="name"
+                                       class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm"/>
+                            </div>
+                            <div>
+                                <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
+                                <input id="email" name="email" required autocomplete="email"
+                                       class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm"/>
+                            </div>
+                            <div>
+                                <label for="password" class="block text-sm font-medium text-gray-700">Password</label>
+                                <input id="password" name="password" type="password" required minlength="8" autocomplete="new-password"
+                                       class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm"/>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <button id="createBtn" type="submit"
+                                    class="inline-flex items-center rounded-md bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
+                                Create
+                            </button>
+                            <button id="createReset" type="button"
+                                    class="inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50">
+                                Reset
+                            </button>
+                        </div>
+                    </form>
                 </div>
             </div>
-            <div class="card-b">
-                <div id="createMsg" style="display:none;"></div>
-                <form id="createForm">
-                    <div class="row">
-                        <div>
-                            <label for="name">Name</label>
-                            <input id="name" name="name" required maxlength="255" autocomplete="name">
+
+            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+                <div class="p-6 space-y-4">
+                    <div class="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+                        <div class="flex items-center gap-3">
+                            <p class="text-sm font-semibold text-gray-900">Users</p>
+                            <span id="countBadge" class="inline-flex items-center rounded-full border border-gray-200 bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-700">
+                                Loading…
+                            </span>
                         </div>
-                        <div>
-                            <label for="email">Email</label>
-                            <input id="email" name="email" required autocomplete="email">
+                        <div class="flex flex-wrap gap-3">
+                            <input id="search" placeholder="Search name or email…"
+                                   class="w-56 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm"/>
+                            <select id="sortDir"
+                                    class="rounded-md border-gray-300 bg-white py-2 pl-3 pr-10 text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                                <option value="desc">Newest first</option>
+                                <option value="asc">Oldest first</option>
+                            </select>
+                            <select id="perPage"
+                                    class="rounded-md border-gray-300 bg-white py-2 pl-3 pr-10 text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                                <option value="5">5 / page</option>
+                                <option value="10">10 / page</option>
+                                <option value="15" selected>15 / page</option>
+                                <option value="25">25 / page</option>
+                                <option value="50">50 / page</option>
+                            </select>
+                            <button id="refreshBtn" type="button"
+                                    class="inline-flex items-center rounded-md border border-gray-300 bg-white px-3 py-2 text-xs font-medium text-gray-700 shadow-sm hover:bg-gray-50">
+                                Refresh
+                            </button>
                         </div>
-                        <div>
-                            <label for="password">Password</label>
-                            <input id="password" name="password" type="password" required minlength="8" autocomplete="new-password">
+                    </div>
+
+                    <div id="listMsg" class="hidden text-sm rounded-md px-4 py-3" role="alert"></div>
+
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200 text-sm">
+                            <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-3 py-2 text-left text-xs font-medium uppercase tracking-wider text-gray-500 w-20">ID</th>
+                                <th class="px-3 py-2 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Name</th>
+                                <th class="px-3 py-2 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Email</th>
+                                <th class="px-3 py-2 text-left text-xs font-medium uppercase tracking-wider text-gray-500 w-48">Created</th>
+                                <th class="px-3 py-2 text-right text-xs font-medium uppercase tracking-wider text-gray-500 w-64">Actions</th>
+                            </tr>
+                            </thead>
+                            <tbody id="tbody" class="divide-y divide-gray-200 bg-white"></tbody>
+                        </table>
+                    </div>
+
+                    <div class="flex items-center justify-between gap-3">
+                        <p id="pageInfo" class="text-xs text-gray-500">—</p>
+                        <div class="flex gap-2">
+                            <button id="prevBtn" type="button"
+                                    class="inline-flex items-center rounded-md border border-gray-300 bg-white px-3 py-1.5 text-xs font-medium text-gray-700 shadow-sm hover:bg-gray-50">
+                                Prev
+                            </button>
+                            <button id="nextBtn" type="button"
+                                    class="inline-flex items-center rounded-md border border-gray-300 bg-white px-3 py-1.5 text-xs font-medium text-gray-700 shadow-sm hover:bg-gray-50">
+                                Next
+                            </button>
                         </div>
-                    </div>
-                    <div style="margin-top: 12px; display:flex; gap: 10px; align-items:center;">
-                        <button class="btn" id="createBtn" type="submit">Create</button>
-                        <button class="btn-ghost" type="button" id="createReset">Reset</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-
-        <div class="card">
-            <div class="card-b">
-                <div class="toolbar" style="margin-bottom: 12px;">
-                    <div class="toolbar-left">
-                        <div style="font-weight:700;">Users</div>
-                        <span class="badge" id="countBadge">Loading…</span>
-                    </div>
-                    <div class="toolbar-left">
-                        <input id="search" placeholder="Search name or email…" style="width: 260px;">
-                        <select id="sortDir" style="padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 10px;">
-                            <option value="desc">Newest first</option>
-                            <option value="asc">Oldest first</option>
-                        </select>
-                        <select id="perPage" style="padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 10px;">
-                            <option value="5">5 / page</option>
-                            <option value="10">10 / page</option>
-                            <option value="15" selected>15 / page</option>
-                            <option value="25">25 / page</option>
-                            <option value="50">50 / page</option>
-                        </select>
-                        <button class="btn-secondary tiny" id="refreshBtn" type="button">Refresh</button>
-                    </div>
-                </div>
-
-                <div id="listMsg" style="display:none; margin-bottom: 10px;"></div>
-
-                <div style="overflow:auto;">
-                    <table>
-                        <thead>
-                        <tr>
-                            <th style="width:70px;">ID</th>
-                            <th>Name</th>
-                            <th>Email</th>
-                            <th style="width:170px;">Created</th>
-                            <th style="width:260px; text-align:right;">Actions</th>
-                        </tr>
-                        </thead>
-                        <tbody id="tbody"></tbody>
-                    </table>
-                </div>
-
-                <div style="display:flex; justify-content:space-between; align-items:center; gap: 10px; margin-top: 12px;">
-                    <div class="muted" id="pageInfo">—</div>
-                    <div style="display:flex; gap: 8px;">
-                        <button class="btn-ghost tiny" id="prevBtn" type="button">Prev</button>
-                        <button class="btn-ghost tiny" id="nextBtn" type="button">Next</button>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-</div>
 
-<template id="rowTpl">
-    <tr>
-        <td class="mono" data-id></td>
-        <td><input data-name></td>
-        <td><input data-email></td>
-        <td class="muted" data-created></td>
-        <td>
-            <div class="actions">
-                <button class="btn tiny" data-save>Save</button>
-                <button class="btn-danger tiny" data-del>Delete</button>
-            </div>
-        </td>
-    </tr>
-</template>
+    <template id="rowTpl">
+        <tr>
+            <td class="px-3 py-2 font-mono text-xs text-gray-500" data-id></td>
+            <td class="px-3 py-2">
+                <input data-name
+                       class="w-full rounded-md border-gray-200 bg-gray-50 px-2 py-1 text-sm focus:border-indigo-500 focus:bg-white focus:ring-indigo-500"/>
+            </td>
+            <td class="px-3 py-2">
+                <input data-email
+                       class="w-full rounded-md border-gray-200 bg-gray-50 px-2 py-1 text-sm focus:border-indigo-500 focus:bg-white focus:ring-indigo-500"/>
+            </td>
+            <td class="px-3 py-2 text-xs text-gray-500" data-created></td>
+            <td class="px-3 py-2">
+                <div class="flex justify-end gap-2">
+                    <button class="inline-flex items-center rounded-md bg-indigo-600 px-3 py-1.5 text-xs font-medium text-white shadow-sm hover:bg-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                            data-save>
+                        Save
+                    </button>
+                    <button class="inline-flex items-center rounded-md bg-red-600 px-3 py-1.5 text-xs font-medium text-white shadow-sm hover:bg-red-500 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
+                            data-del>
+                        Delete
+                    </button>
+                </div>
+            </td>
+        </tr>
+    </template>
 
-<script>
+    <script>
     const apiBase = '/api';
     const el = (id) => document.getElementById(id);
 
@@ -401,7 +391,6 @@
     // Init
     el('apiBaseBadge').textContent = `API: ${apiBase}`;
     loadUsers();
-</script>
-</body>
-</html>
+    </script>
+</x-app-layout>
 

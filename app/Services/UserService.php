@@ -6,17 +6,24 @@ use App\Models\User;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Validator;
 
 class UserService
 {
     public function createUser(array $data): User
     {
+        $validated = Validator::make($data, [
+            'name' => ['required', 'string', 'max:255'],
+            'email' => ['required', 'string', 'email', 'max:255'],
+            'password' => ['required', 'string', 'min:8'],
+        ])->validate();
+
+        $attributes = Arr::only($validated, ['name', 'email', 'password']);
+        $attributes['password'] = Hash::make($attributes['password']);
+
         /** @var User $user */
-        $user = User::query()->create([
-            'name' => $data['name'],
-            'email' => $data['email'],
-            'password' => $data['password'],
-        ]);
+        $user = User::query()->create($attributes);
 
         return $user;
     }
@@ -25,10 +32,22 @@ class UserService
     {
         $user = $this->getUserById($id);
 
-        $user->fill(Arr::only($data, ['name', 'email']));
+        $validated = Validator::make($data, [
+            'name' => ['sometimes', 'string', 'max:255'],
+            'email' => ['sometimes', 'string', 'email', 'max:255'],
+            'password' => ['sometimes', 'string', 'min:8'],
+        ])->validate();
+
+        $attributes = Arr::only($validated, ['name', 'email', 'password']);
+
+        if (array_key_exists('password', $attributes)) {
+            $attributes['password'] = Hash::make($attributes['password']);
+        }
+
+        $user->fill($attributes);
         $user->save();
 
-        return $user;
+        return $user->refresh();
     }
 
     public function deleteUser(int $id): void
