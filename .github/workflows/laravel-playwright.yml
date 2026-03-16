@@ -45,11 +45,8 @@ jobs:
       with:
         node-version: 20
 
-    - name: Remove lockfile
-      run: rm -rf node_modules package-lock.json
-
     - name: Install NPM dependencies
-      run: npm install --omit=optional
+      run: npm install
 
     - name: Install Playwright browsers
       run: npx playwright install --with-deps
