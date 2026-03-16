@@ -217,7 +217,8 @@ Comprehensive end-to-end Playwright test plan for the Laravel app covering authe
     - expect: 500 error page or graceful fallback shown
     - expect: No sensitive stack traces visible to user
 
-#### 5.4. Data Boundary Tests
+#### 5.4. Data Boundary Tests 
+// feat
 
 **File:** `tests/e2e/ui/data-boundary.spec.ts`
 
